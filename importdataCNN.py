@@ -31,15 +31,9 @@ def main():
     x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
     x_test = ((x_test - np.mean(x_test, axis=1).reshape(-1,1)) / np.std(x_test, axis=1).reshape(-1,1))
 
-    # PLOTTING THE FIRST PROCESSED LIGHT CURVE
-    plt.subplot(2, 1, 1)
+    # PLOTTING THE PROCESSED LIGHT CURVE
     plt.plot(x_train[1, :], '.')
     plt.title('Unprocessed light curve')
-
-    # PLOTTING THE SECOND PROCESSED LIGHT CURVE
-    plt.subplot(2, 1, 2)
-    plt.plot(x_test[1, :], '.')
-    plt.title('Processed light curve')
     plt.show()
 
     # PREPROCESSING DATA
