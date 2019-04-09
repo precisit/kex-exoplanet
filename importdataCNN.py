@@ -10,7 +10,6 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, confu
 
 def main():
     trainSetPath = "datasets/exoTrain.csv"
-    trainSetPath = "datasets/exoTrain.csv"
     testSetPath = "datasets/exoTest.csv"
     print("Loading datasets...")
     df_train = pd.read_csv(trainSetPath, encoding= "ISO-8859-1")
