@@ -27,6 +27,15 @@ def main():
     Xd = np.array(df_dev_x)
     Yd = np.array(df_dev_y)
 
+    # Scale each observation to zeromean and unit variance
+
+    X_1 = ((X - np.mean(X, axis=1).reshape(-1,1)) / 
+            np.std(X, axis=1).reshape(-1,1))
+
+    #PLOTTING
+    plt.plot(X[1, :], '.')
+    plt.show()
+
     
 
 print("Before main")
