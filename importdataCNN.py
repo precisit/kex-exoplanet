@@ -38,7 +38,7 @@ def main():
 
     # PLOTTING THE SECOND PROCESSED LIGHT CURVE
     plt.subplot(2, 1, 2)
-    plt.plot(X_test1[1, :], '.')
+    plt.plot(X_test[1, :], '.')
     plt.title('Processed light curve')
     plt.show()
 
