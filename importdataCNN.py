@@ -3,7 +3,7 @@
 
 import pandas as pd
 import numpy as np
-from scipy.ndimage.filters import uniform_filter1d
+
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 
@@ -27,16 +27,6 @@ def main():
     Xd = np.array(df_dev_x)
     Yd = np.array(df_dev_y)
 
-    # Scale each observation to zeromean and unit variance
-
-    X_1 = ((X - np.mean(X, axis=1).reshape(-1,1)) / np.std(X, axis=1).reshape(-1,1))
-    X_2 = ((Xd - np.mean(Xd, axis=1).reshape(-1,1)) / np.std(Xd, axis=1).reshape(-1,1))
-
-    #PLOTTING
-    plt.plot(X_1[1, :], '.')
-    plt.show()
-
-    
 
 print("Before main")
 if __name__ == '__main__':
