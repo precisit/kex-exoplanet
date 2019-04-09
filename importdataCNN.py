@@ -41,7 +41,7 @@ def main():
 
     #Plotting the second processed light curve
     plt.subplot(2, 1, 2)
-    plt.plot(X_test1[1, :], '.')
+    plt.plot(X_train1[1, :], '.')
     plt.title('Processed light curve')
     plt.show()
 
