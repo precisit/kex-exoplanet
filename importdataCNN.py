@@ -21,21 +21,28 @@ def main():
 
     # Converting the pandas dataframe to numpy arrays (matrices)
     df_train_x = df_train.drop('LABEL', axis=1)
-    df_dev_x = df_dev.drop('LABEL', axis=1)
+    df_test_x = df_dev.drop('LABEL', axis=1)
     df_train_y = df_train.LABEL
-    df_dev_y = df_dev.LABEL
-    X = np.array(df_train_x)
-    Y = np.array(df_train_y)    
-    Xd = np.array(df_dev_x)
-    Yd = np.array(df_dev_y)
+    df_test_y = df_dev.LABEL
+    X_train = np.array(df_train_x)
+    Y_train = np.array(df_train_y)    
+    X_test = np.array(df_test_x)
+    Y_test = np.array(df_test_y)
 
     # Scale each observation to zeromean and unit variance
 
-    X_1 = ((X - np.mean(X, axis=1).reshape(-1,1)) / np.std(X, axis=1).reshape(-1,1))
-    X_2 = ((Xd - np.mean(Xd, axis=1).reshape(-1,1)) / np.std(Xd, axis=1).reshape(-1,1))
+    X_train1 = ((X_train - np.mean(X_train, axis=1).reshape(-1,1)) / np.std(X_train, axis=1).reshape(-1,1))
+    X_test1 = ((X_test - np.mean(X_test, axis=1).reshape(-1,1)) / np.std(X_test, axis=1).reshape(-1,1))
 
-    #PLOTTING
-    plt.plot(X_1[1, :], '.')
+    #PLOTTING the first processed light curve
+    plt.subplot(2, 1, 1)
+    plt.plot(X_train[1, :], '.')
+    plt.title('Unprocessed light curve')
+
+    #Plotting the second processed light curve
+    plt.subplot(2, 1, 2)
+    plt.plot(X_test1[1, :], '.')
+    plt.title('Processed light curve')
     plt.show()
 
 
