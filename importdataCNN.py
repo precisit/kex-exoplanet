@@ -36,7 +36,6 @@ def main():
     plt.plot(x_train[1, :], '.')
     plt.title('Unprocessed light curve')
     
-
     # PREPROCESSING DATA
     x_train = np.stack([x_train, uniform_filter1d(x_train, axis=1, size=200)], axis=2)
     x_test = np.stack([x_test, uniform_filter1d(x_test, axis=1, size=200)], axis=2)
