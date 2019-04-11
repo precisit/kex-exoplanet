@@ -43,6 +43,7 @@ def main():
     plt.subplot(2, 1, 2)
     plt.plot(x_train[1, :], '.')
     plt.show()
+    #kre
 
 print("Before main")
 if __name__ == '__main__':
