@@ -53,7 +53,6 @@ def main():
     model = Sequential()
     model.add(Conv1D(filters=8, kernel_size=11, activation='relu', input_shape=x_train.shape[1:]))
 
-
 print("Before main")
 if __name__ == '__main__':
     print("In main")
