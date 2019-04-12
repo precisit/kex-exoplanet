@@ -7,6 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from keras.models import Sequential, Model
+from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
+BatchNormalization, Input, concatenate, Activation
+from keras.optimizers import Adam
 
 # DEFINE MAIN-FUNCTION
 def main():
@@ -40,10 +44,11 @@ def main():
     x_train = np.stack([x_train, uniform_filter1d(x_train, axis=1, size=200)], axis=2)
     x_test = np.stack([x_test, uniform_filter1d(x_test, axis=1, size=200)], axis=2)
     
+    # PLOTTING PREPROCESSED DATA
     plt.subplot(2, 1, 2)
     plt.plot(x_train[1, :], '.')
     plt.show()
-    #kre
+
 
 print("Before main")
 if __name__ == '__main__':
