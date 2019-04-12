@@ -49,6 +49,10 @@ def main():
     plt.plot(x_train[1, :], '.')
     plt.show()
 
+    # DEFINE THE NEURAL NETWORK
+    model = Sequential()
+    model.add(Conv1D(filters=8, kernel_size=11, activation='relu', input_shape=x_train.shape[1:]))
+
 
 print("Before main")
 if __name__ == '__main__':
