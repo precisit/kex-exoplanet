@@ -80,10 +80,10 @@ def main():
         non_idx = np.where(y_train[:,0] == 1.)[0]
 
         while True:
-            np.random.shuffle(yes_idx)
+            np.random.shuffle(yes_idx) #randomize indices
             np.random.shuffle(non_idx)
-            x_batch[:half_batch] = x_train[yes_idx[:half_batch]]
-            x_batch[half_batch:] = x_train[non_idx[half_batch:batch_size]]
+            x_batch[:half_batch] = x_train[yes_idx[:half_batch]] #half the batch has a positive label
+            x_batch[half_batch:] = x_train[non_idx[half_batch:batch_size]] #the other half has a negative label
             y_batch[:half_batch] = y_train[yes_idx[:half_batch]]
             y_batch[half_batch:] = y_train[non_idx[half_batch:batch_size]]
             for i in range(batch_size):
