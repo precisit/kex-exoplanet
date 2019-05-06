@@ -7,6 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from keras.models import Sequential, Model
+from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
+BatchNormalization, Input, concatenate, Activation
+from keras.optimizers import Adam
 
 # Define main function
 def main():
@@ -60,27 +64,33 @@ def main():
     model.add(Dense(64, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
 
-    # Define function that generates batch with equally positiv
+    # Define function that generates batch with equally positive
     # and negative samples, and rotates them randomly in time
     def batch_generator(x_train, y_train, batch_size=32):
         half_batch = batch_size // 2
-        x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #define empty batch for input
-        y_batch = np.empty((batch_size, y_train.shape[1]), dtype='float32') #define empty batch for output
+        x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty batch for input
+        y_batch = np.empty((batch_size, y_train.shape[1]), dtype='float32') #empty batch for output
 
-        yes_idx = np.where(y_train[:,0] == 2.)[0] 
-        non_idx = np.where(y_train[:,0] == 1.)[0]
+        # Find indicies for positive and negative labels
+        pos_idx = np.where(y_train[:,0] == 2.)[0] 
+        neg_idx = np.where(y_train[:,0] == 1.)[0]
 
         while True:
-            np.random.shuffle(yes_idx) #randomize indices
-            np.random.shuffle(non_idx)
-            x_batch[:half_batch] = x_train[yes_idx[:half_batch]] #half the batch has a positive label
-            x_batch[half_batch:] = x_train[non_idx[half_batch:batch_size]] #the other half has a negative label
-            y_batch[:half_batch] = y_train[yes_idx[:half_batch]]
-            y_batch[half_batch:] = y_train[non_idx[half_batch:batch_size]]
+            # Randomize the positive and negative indicies
+            np.random.shuffle(pos_idx)
+            np.random.shuffle(neg_idx)
+
+            # Let half of the batch have a positive classification and the other
+            # half have a negative classification
+            x_batch[:half_batch] = x_train[pos_idx[:half_batch]] 
+            x_batch[half_batch:] = x_train[neg_idx[half_batch:batch_size]] 
+            y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
+            y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
+
+            
             for i in range(batch_size):
                 sz = np.random.randint(x_batch.shape[1])
                 x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
-     
             yield x_batch, y_batch
         
 
