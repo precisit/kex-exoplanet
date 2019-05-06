@@ -1,55 +1,46 @@
-# PROGRAM THAT IMPORTS AND PREPROCESSES DATA TO MEET
-# REQUIRMENTS THAT CNN HAVE ON INPUT DATA
+# Program that imports and preprocesses data to meet
+# reqiuerments that CNN have on input data
 
-# IMPORT PACKAGES
+# Import packages
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
-from keras.models import Sequential, Model
-from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
-BatchNormalization, Input, concatenate, Activation
-from keras.optimizers import Adam
 
-# DEFINE MAIN-FUNCTION
+# Define main function
 def main():
-    trainSetPath = "datasets/exoTrain.csv" #define path for data files
-    testSetPath = "datasets/exoTest.csv"
     print("Loading datasets...")
-    train = pd.read_csv(trainSetPath, encoding= "ISO-8859-1") #on data frame format
-    test = pd.read_csv(testSetPath, encoding= "ISO-8859-1") #on data frame format
-    print(train.info())
+    train = pd.read_csv("datasets/exoTrain.csv", encoding= "ISO-8859-1") #on data frame format
+    test = pd.read_csv("datasets/exoTest.csv", encoding= "ISO-8859-1") #on data frame format
 
-    # CONVERTING THE PANDAS DATAFRAM TO NUMPY ARRAYS (MATRICES)
-    train_x = train.drop('LABEL', axis=1) #removes "label" from x-values
-    test_x = test.drop('LABEL', axis=1) 
-    train_y = train.LABEL #picks "label" to y-values
-    test_y = test.LABEL
-    x_train = np.array(train_x) #changes format form data frame to numpy array
-    y_train = np.array(train_y)
-    x_test = np.array(test_x) 
-    y_test = np.array(test_y)
-
-    # SCALE EACH OBSERVATION TO ZERO MEAN AND UNIT VARIANCE
-    x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
-    x_test = ((x_test - np.mean(x_test, axis=1).reshape(-1,1)) / np.std(x_test, axis=1).reshape(-1,1))
-
-    # PLOTTING THE PROCESSED LIGHT CURVE
+    # Converting the formate from dataframe to numpy arrays (matrices)
+    # and defining x-values and y-values for both the test and training set
+    x_train = np.array(train.drop('LABEL', axis=1)) #remove classification-column "label"
+    x_test = np.array(test.drop('LABEL', axis=1))
+    y_train = np.array(train.LABEL) #add classification-column "label"
+    y_test = np.array(test.LABEL)
+  
+    # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
     plt.plot(x_train[1, :], '.')
     plt.title('Unprocessed light curve')
-    
-    # PREPROCESSING DATA
+
+    # Scale each observation to zero mean and unit variance
+    x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
+    x_test = ((x_test - np.mean(x_test, axis=1).reshape(-1,1)) / np.std(x_test, axis=1).reshape(-1,1))
+
+    # Preprocessing data
     x_train = np.stack([x_train, uniform_filter1d(x_train, axis=1, size=200)], axis=2)
     x_test = np.stack([x_test, uniform_filter1d(x_test, axis=1, size=200)], axis=2)
-    
-    # PLOTTING PREPROCESSED DATA
+
+    # Plotting the processed light curve
     plt.subplot(2, 1, 2)
     plt.plot(x_train[1, :], '.')
+    plt.title('Processed light curve')
     plt.show()
 
-    # DEFINE THE NEURAL NETWORK
+    # Construct the neural network
     model = Sequential()
     model.add(Conv1D(filters=8, kernel_size=11, activation='relu', input_shape=x_train.shape[1:]))
     model.add(MaxPool1D(strides=4))
@@ -69,8 +60,8 @@ def main():
     model.add(Dense(64, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
 
-    # DEFINE FUNCTION THAT GENERATES BATCH WITH EQUALLY POSITIV
-    # AND NEGAIVE SAMPLES, AND ROTATES THEM RANDOMLY IN TIME
+    # Define function that generates batch with equally positiv
+    # and negative samples, and rotates them randomly in time
     def batch_generator(x_train, y_train, batch_size=32):
         half_batch = batch_size // 2
         x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #define empty batch for input
