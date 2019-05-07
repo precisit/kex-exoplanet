@@ -87,7 +87,7 @@ def main():
             y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
             y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
 
-            
+            # Generating new examples by rotating 
             for i in range(batch_size):
                 sz = np.random.randint(x_batch.shape[1])
                 x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
