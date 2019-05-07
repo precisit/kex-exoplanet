@@ -87,11 +87,18 @@ def main():
             y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
             y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
 
-            # Generating new examples by rotating 
+            # Generating new examples by rotating them in time
             for i in range(batch_size):
                 sz = np.random.randint(x_batch.shape[1])
                 x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
             yield x_batch, y_batch
+
+    # Compile model and train it 
+    model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+    hist = model.fit_generator(batch_generator(x_train, y_train, 32), \
+                    validation_data=(x_test, y_test), \
+                    verbose=0, epochs=5, \
+                    steps_per_epoch=x_train.shape[1]//32)
         
 
 print("Before main")
