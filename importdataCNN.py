@@ -39,10 +39,10 @@ def main():
     x_test = np.stack([x_test, uniform_filter1d(x_test, axis=1, size=200)], axis=2)
 
     # Plotting the processed light curve
-    plt.subplot(2, 1, 2)
-    plt.plot(x_train[1, :], '.')
-    plt.title('Processed light curve')
-    plt.show()
+    # plt.subplot(2, 1, 2)
+    # plt.plot(x_train[1, :], '.')
+    # plt.title('Processed light curve')
+    # plt.show()
 
     # Construct the neural network
     model = Sequential()
@@ -69,7 +69,7 @@ def main():
     def batch_generator(x_train, y_train, batch_size=32):
         half_batch = batch_size // 2
         x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty batch for input
-        y_batch = np.empty((batch_size, y_train.shape[1]), dtype='float32') #empty batch for output
+        y_batch = np.empty((batch_size, y_train.shape[0]), dtype='float32') #empty batch for output
 
         # Find indicies for positive and negative labels
         pos_idx = np.where(y_train[:,0] == 2.)[0] 
