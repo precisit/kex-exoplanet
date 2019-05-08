@@ -87,24 +87,26 @@ def main():
         # Find indicies for positive and negative labels
         pos_idx = np.where(y_train == 2)[0]
         neg_idx = np.where(y_train == 1)[0]
+        
+        # Randomize the positive and negative indicies
+        np.random.shuffle(pos_idx)
+        np.random.shuffle(neg_idx)
 
-        while True:
-            # Randomize the positive and negative indicies
-            np.random.shuffle(pos_idx)
-            np.random.shuffle(neg_idx)
+        # Let half of the batch have a positive classification and the other
+        # half have a negative classification
+        x_batch[:half_batch] = x_train[pos_idx[:half_batch]] 
+        x_batch[half_batch:] = x_train[neg_idx[half_batch:batch_size]] 
+        y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
+        y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
 
-            # Let half of the batch have a positive classification and the other
-            # half have a negative classification
-            x_batch[:half_batch] = x_train[pos_idx[:half_batch]] 
-            x_batch[half_batch:] = x_train[neg_idx[half_batch:batch_size]] 
-            y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
-            y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
+        # Generating new examples by rotating them in time
+        for i in range(batch_size):
+            sz = np.random.randint(x_batch.shape[1])
+            x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
+        yield x_batch, y_batch
+    
+    print('hej')
 
-            # Generating new examples by rotating them in time
-            for i in range(batch_size):
-                sz = np.random.randint(x_batch.shape[1])
-                x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
-            yield x_batch, y_batch
 
     # Compile model and train it 
     model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
