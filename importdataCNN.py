@@ -4,6 +4,7 @@
 # Import packages
 import pandas as pd
 import numpy as np
+import pickle
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
@@ -24,6 +25,10 @@ def main():
     x_test = np.array(test.drop('LABEL', axis=1))
     y_train = np.array(train.LABEL) #add classification-column "label"
     y_test = np.array(test.LABEL)
+
+
+
+    print(y_train.shape)
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
@@ -69,11 +74,19 @@ def main():
     def batch_generator(x_train, y_train, batch_size=32):
         half_batch = batch_size // 2
         x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty batch for input
-        y_batch = np.empty((batch_size, y_train.shape[0]), dtype='float32') #empty batch for output
+        
+        # # Saving objects
+        # with open('objs.pkl', 'w') as f:  # Python 3: open(..., 'wb')
+        #     pickle.dump([x_batch], f)
+
+        y_batch = np.empty((batch_size), dtype='float32') #empty batch for output
+
+        print(y_batch.shape)
+        print(y_train.shape)
 
         # Find indicies for positive and negative labels
-        pos_idx = np.where(y_train[:,0] == 2.)[0] 
-        neg_idx = np.where(y_train[:,0] == 1.)[0]
+        pos_idx = np.where(y_train == 2)[0]
+        neg_idx = np.where(y_train == 1)[0]
 
         while True:
             # Randomize the positive and negative indicies
