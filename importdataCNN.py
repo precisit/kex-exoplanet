@@ -24,6 +24,8 @@ def main():
     x_test = np.array(test.drop('LABEL', axis=1))
     y_train = np.array(train.LABEL) #add classification-column "label"
     y_test = np.array(test.LABEL)
+    a = y_train.shape
+    print(a)
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
