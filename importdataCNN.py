@@ -13,6 +13,10 @@ from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
 BatchNormalization, Input, concatenate, Activation
 from keras.optimizers import Adam
 
+# Just disables the warning, doesn't enable AVX/FMA
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 # Define main function
 def main():
     print("Loading datasets...")
@@ -25,10 +29,6 @@ def main():
     x_test = np.array(test.drop('LABEL', axis=1))
     y_train = np.array(train.LABEL) #add classification-column "label"
     y_test = np.array(test.LABEL)
-
-
-
-    print(y_train.shape)
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
@@ -81,9 +81,6 @@ def main():
 
         y_batch = np.empty((batch_size), dtype='float32') #empty batch for output
 
-        print(y_batch.shape)
-        print(y_train.shape)
-
         # Find indicies for positive and negative labels
         pos_idx = np.where(y_train == 2)[0]
         neg_idx = np.where(y_train == 1)[0]
@@ -107,13 +104,22 @@ def main():
     
     print('hej')
 
-
     # Compile model and train it 
     model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+    print('hello')
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), \
-                    validation_data=(x_test, y_test), \
-                    verbose=0, epochs=5, \
-                    steps_per_epoch=x_train.shape[1]//32)
+                                validation_data=(x_test, y_test), \
+                                verbose=0, epochs=5, \
+                                steps_per_epoch=x_train.shape[1]//32)
+
+    print('kre')
+
+    # #Then speed things up a little
+    # model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+    # hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
+    #                 validation_data=(x_test, y_test), 
+    #                 verbose=2, epochs=40,
+    #                 steps_per_epoch=x_train.shape[1]//32)
         
 
 print("Before main")
