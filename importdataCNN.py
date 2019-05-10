@@ -31,9 +31,9 @@ def main():
     y_test = np.array(test.LABEL)
   
     # Plotting the unprocessed light curve
-    plt.subplot(2, 1, 1)
-    plt.plot(x_train[1, :], '.')
-    plt.title('Unprocessed light curve')
+    #plt.subplot(2, 1, 1)
+    #plt.plot(x_train[1, :], '.')
+    #plt.title('Unprocessed light curve')
 
     # Scale each observation to zero mean and unit variance
     x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
@@ -82,44 +82,48 @@ def main():
         y_batch = np.empty((batch_size), dtype='float32') #empty batch for output
 
         # Find indicies for positive and negative labels
-        pos_idx = np.where(y_train == 2)[0]
-        neg_idx = np.where(y_train == 1)[0]
-        
-        # Randomize the positive and negative indicies
-        np.random.shuffle(pos_idx)
-        np.random.shuffle(neg_idx)
+        while True:
+            pos_idx = np.where(y_train == 2)[0]
+            neg_idx = np.where(y_train == 1)[0]
+            
+            # Randomize the positive and negative indicies
+            np.random.shuffle(pos_idx)
+            np.random.shuffle(neg_idx)
 
-        # Let half of the batch have a positive classification and the other
-        # half have a negative classification
-        x_batch[:half_batch] = x_train[pos_idx[:half_batch]] 
-        x_batch[half_batch:] = x_train[neg_idx[half_batch:batch_size]] 
-        y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
-        y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
+            # Let half of the batch have a positive classification and the other
+            # half have a negative classification
+            x_batch[:half_batch] = x_train[pos_idx[:half_batch]] 
+            x_batch[half_batch:] = x_train[neg_idx[half_batch:batch_size]] 
+            y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
+            y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
 
-        # Generating new examples by rotating them in time
-        for i in range(batch_size):
-            sz = np.random.randint(x_batch.shape[1])
-            x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
-        yield x_batch, y_batch
-    
-    print('hej')
+            # Generating new examples by rotating them in time
+            for i in range(batch_size):
+                sz = np.random.randint(x_batch.shape[1])
+                x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
+            yield x_batch, y_batch
 
-    # Compile model and train it 
+    # Compile model and train the model, make sure it converges
     model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
-    print('hello')
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), \
                                 validation_data=(x_test, y_test), \
                                 verbose=0, epochs=5, \
                                 steps_per_epoch=x_train.shape[1]//32)
 
-    print('kre')
+    # Proceeding the training with faster learning rate
+    model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+    hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
+                                validation_data=(x_test, y_test), 
+                                verbose=2, epochs=40,
+                                steps_per_epoch=x_train.shape[1]//32)
 
-    # #Then speed things up a little
-    # model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
-    # hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
-    #                 validation_data=(x_test, y_test), 
-    #                 verbose=2, epochs=40,
-    #                 steps_per_epoch=x_train.shape[1]//32)
+    # Plot convergence rate
+    plt.plot(hist.history['loss'], color='b')
+    plt.plot(hist.history['val_loss'], color='r')
+    plt.show()
+    plt.plot(hist.history['acc'], color='b')
+    plt.plot(hist.history['val_acc'], color='r')
+    plt.show()
         
 
 print("Before main")
