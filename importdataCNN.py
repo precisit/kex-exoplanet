@@ -124,7 +124,6 @@ def main():
     neg_idx = np.where(y_test[:,0] == 1.)[0]
     pos_idx = np.where(y_test[:,0] == 2.)[0]
     y_pred = model.predict(x_test)[:,0]
-    matrix = metrics.confusion_matrix(y_test.argmax(axis=1), y_pred.argmax(axis=1))
         
 print("Before main")
 if __name__ == '__main__':
