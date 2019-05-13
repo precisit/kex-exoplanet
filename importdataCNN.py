@@ -31,9 +31,9 @@ def main():
     y_test = np.array(test.LABEL)
   
     # Plotting the unprocessed light curve
-    #plt.subplot(2, 1, 1)
-    #plt.plot(x_train[1, :], '.')
-    #plt.title('Unprocessed light curve')
+    plt.subplot(2, 1, 1)
+    plt.plot(x_train[1, :], '.')
+    plt.title('Unprocessed light curve')
 
     # Scale each observation to zero mean and unit variance
     x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
@@ -44,10 +44,10 @@ def main():
     x_test = np.stack([x_test, uniform_filter1d(x_test, axis=1, size=200)], axis=2)
 
     # Plotting the processed light curve
-    # plt.subplot(2, 1, 2)
-    # plt.plot(x_train[1, :], '.')
-    # plt.title('Processed light curve')
-    # plt.show()
+    plt.subplot(2, 1, 2)
+    plt.plot(x_train[1, :], '.')
+    plt.title('Processed light curve')
+    plt.show()
 
     # Construct the neural network
     model = Sequential()
@@ -73,13 +73,8 @@ def main():
     # and negative samples, and rotates them randomly in time
     def batch_generator(x_train, y_train, batch_size=32):
         half_batch = batch_size // 2
-        x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty batch for input
-        
-        # # Saving objects
-        # with open('objs.pkl', 'w') as f:  # Python 3: open(..., 'wb')
-        #     pickle.dump([x_batch], f)
-
-        y_batch = np.empty((batch_size), dtype='float32') #empty batch for output
+        x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty matrix for input
+        y_batch = np.empty((batch_size), dtype='float32') #empty matrix for output
 
         # Find indicies for positive and negative labels
         while True:
@@ -124,8 +119,12 @@ def main():
     plt.plot(hist.history['acc'], color='b')
     plt.plot(hist.history['val_acc'], color='r')
     plt.show()
-        
 
+    # Make predictions for test data
+    neg_idx = np.where(y_test[:,0] == 0.)[0]
+    pos_idx = np.where(y_test[:,0] == 1.)[0]
+    y_hat = model.predict(x_test)[:,0]
+        
 print("Before main")
 if __name__ == '__main__':
     print("In main")
