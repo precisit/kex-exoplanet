@@ -103,14 +103,14 @@ def main():
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), \
                                 validation_data=(x_test, y_test), \
                                 verbose=0, epochs=5, \
-                                steps_per_epoch=x_train.shape[1]//32)
+                                steps_per_epoch=x_train.shape[0]//32)
 
     # Proceeding the training with faster learning rate
     model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
                                 validation_data=(x_test, y_test), 
                                 verbose=2, epochs=40,
-                                steps_per_epoch=x_train.shape[1]//32)
+                                steps_per_epoch=x_train.shape[0]//32)
 
     # Plot convergence rate
     plt.plot(hist.history['loss'], color='b')
@@ -121,8 +121,8 @@ def main():
     plt.show()
 
     # Make predictions for test data
-    neg_idx = np.where(y_test[:,0] == 0.)[0]
-    pos_idx = np.where(y_test[:,0] == 1.)[0]
+    neg_idx = np.where(y_test[:,0] == 1.)[0]
+    pos_idx = np.where(y_test[:,0] == 2.)[0]
     y_hat = model.predict(x_test)[:,0]
         
 print("Before main")
