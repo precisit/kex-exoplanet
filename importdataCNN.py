@@ -16,8 +16,6 @@ from keras.optimizers import Adam
 # Just disables the warning, doesn't enable AVX/FMA
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
-
 
 # Define main function
 def main():
@@ -33,9 +31,9 @@ def main():
     y_test = np.array(test.LABEL)
   
     # Plotting the unprocessed light curve
-    #plt.subplot(2, 1, 1)
-    #plt.plot(x_train[1, :], '.')
-    #plt.title('Unprocessed light curve')
+    plt.subplot(2, 1, 1)
+    plt.plot(x_train[1, :], '.')
+    plt.title('Unprocessed light curve')
 
     # Scale each observation to zero mean and unit variance
     x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
@@ -46,10 +44,10 @@ def main():
     x_test = np.stack([x_test, uniform_filter1d(x_test, axis=1, size=200)], axis=2)
 
     # Plotting the processed light curve
-    # plt.subplot(2, 1, 2)
-    # plt.plot(x_train[1, :], '.')
-    # plt.title('Processed light curve')
-    # plt.show()
+    plt.subplot(2, 1, 2)
+    plt.plot(x_train[1, :], '.')
+    plt.title('Processed light curve')
+    plt.show()
 
     # Construct the neural network
     model = Sequential()
@@ -75,13 +73,8 @@ def main():
     # and negative samples, and rotates them randomly in time
     def batch_generator(x_train, y_train, batch_size=32):
         half_batch = batch_size // 2
-        x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty batch for input
-        
-        # # Saving objects
-        # with open('objs.pkl', 'w') as f:  # Python 3: open(..., 'wb')
-        #     pickle.dump([x_batch], f)
-
-        y_batch = np.empty((batch_size), dtype='float32') #empty batch for output
+        x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty matrix for input
+        y_batch = np.empty((batch_size), dtype='float32') #empty matrix for output
 
         # Find indicies for positive and negative labels
         while True:
@@ -110,26 +103,28 @@ def main():
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), \
                                 validation_data=(x_test, y_test), \
                                 verbose=0, epochs=5, \
-                                steps_per_epoch=x_train.shape[1]//32)
+                                steps_per_epoch=x_train.shape[0]//32)
 
-    print('hej')
-
-    # # # Proceeding the training with faster learning rate
-    # # #model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
-    # # #hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
-    # #                             validation_data=(x_test, y_test), 
-    # #                             verbose=2, epochs=40,
-    # #                             steps_per_epoch=x_train.shape[1]//32)
+    # Proceeding the training with faster learning rate
+    model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+    hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
+                                validation_data=(x_test, y_test), 
+                                verbose=2, epochs=40,
+                                steps_per_epoch=x_train.shape[0]//32)
 
     # Plot convergence rate
-    #plt.plot(hist.history['loss'], color='b')
-    #plt.plot(hist.history['val_loss'], color='r')
-    #plt.show()
-    #plt.plot(hist.history['acc'], color='b')
-    #plt.plot(hist.history['val_acc'], color='r')
-    #plt.show()
-        
+    plt.plot(hist.history['loss'], color='b')
+    plt.plot(hist.history['val_loss'], color='r')
+    plt.show()
+    plt.plot(hist.history['acc'], color='b')
+    plt.plot(hist.history['val_acc'], color='r')
+    plt.show()
 
+    # Make predictions for test data
+    neg_idx = np.where(y_test[:,0] == 1.)[0]
+    pos_idx = np.where(y_test[:,0] == 2.)[0]
+    y_hat = model.predict(x_test)[:,0]
+        
 print("Before main")
 if __name__ == '__main__':
     print("In main")
