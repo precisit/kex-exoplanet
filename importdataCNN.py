@@ -23,10 +23,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # Define main function
 def main():
     print("Loading datasets...")
-    train = pd.read_csv("datasets/exoTrain.csv", encoding= "ISO-8859-1") #on data frame format
-    test = pd.read_csv("datasets/exoTest.csv", encoding= "ISO-8859-1") #on data frame format
+    train = pd.read_csv("gdrive/My Drive/datasets/exoTrain.csv", encoding= "ISO-8859-1") #on data frame format
+    test = pd.read_csv("gdrive/My Drive/datasets/exoTest.csv", encoding= "ISO-8859-1") #on data frame format
 
-    # Loading data and defining the test and training data
+    # Converting the formate from dataframe to numpy arrays (matrices)
+    # and defining x-values and y-values for both the test and training set
     raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTrain.csv", skiprows=1, delimiter=',')
     x_train = raw_data[:, 1:]
     y_train = raw_data[:, 0, np.newaxis] - 1.
@@ -34,6 +35,9 @@ def main():
     x_test = raw_data[:, 1:]
     y_test = raw_data[:, 0, np.newaxis] - 1.
     del raw_data
+    
+    print(y_train)
+    print(y_train.shape)
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
@@ -142,24 +146,28 @@ def main():
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Proceeding the training with faster learning rate
-    model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy',precision,recall])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
                                 validation_data=(x_test, y_test), 
-                                verbose=2, epochs=10,
+                                verbose=2, epochs=40,
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Plot convergence rate
-    #plt.plot(hist.history['recall'], color='g')
-    #plt.plot(hist.history['val_recall'], color='r')
-    #plt.show()
-    #plt.plot(hist.history['precision'], color='g')
-    #plt.plot(hist.history['val_precision'], color='r')
-    #plt.show()
+    plt.plot(hist.history['recall'], color='g')
+    plt.plot(hist.history['val_recall'], color='r')
+    plt.title('Recall')
+    plt.show()
+    plt.plot(hist.history['precision'], color='g')
+    plt.plot(hist.history['val_precision'], color='r')
+    plt.title('Precision')
+    plt.show()
     plt.plot(hist.history['loss'], color='b')
     plt.plot(hist.history['val_loss'], color='r')
+    plt.title('Loss')
     plt.show()
     plt.plot(hist.history['acc'], color='b')
     plt.plot(hist.history['val_acc'], color='r')
+    plt.title('Accuracy')
     plt.show()
 
     # Make predictions for test data
