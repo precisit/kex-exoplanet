@@ -127,9 +127,7 @@ def main():
 	
     def recall(y_true, y_pred):
         """Recall metric.
-
         Only computes a batch-wise average of recall.
-
         Computes the recall, a metric for multi-label classification of
         how many relevant items are selected.
         """
@@ -175,6 +173,9 @@ def main():
     pos_idx = np.where(y_test == 1.)[0]
     y_pred = model.predict(x_test)[:,0]
     
+    #prediction = np.empty(len(y_pred), dtype=object)
+    y_pred = np.where(y_pred[:, 0]>=0.5, 1, 0)
+
     print(y_test[0:5])
     print(y_pred[0:5])
     
