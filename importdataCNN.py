@@ -8,10 +8,13 @@ import pickle
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from keras import backend as K
 from keras.models import Sequential, Model
 from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
 BatchNormalization, Input, concatenate, Activation
 from keras.optimizers import Adam
+from google.colab import drive
+drive.mount('/content/gdrive')
 
 # Just disables the warning, doesn't enable AVX/FMA
 import os
@@ -23,12 +26,14 @@ def main():
     train = pd.read_csv("datasets/exoTrain.csv", encoding= "ISO-8859-1") #on data frame format
     test = pd.read_csv("datasets/exoTest.csv", encoding= "ISO-8859-1") #on data frame format
 
-    # Converting the formate from dataframe to numpy arrays (matrices)
-    # and defining x-values and y-values for both the test and training set
-    x_train = np.array(train.drop('LABEL', axis=1)) #remove classification-column "label"
-    x_test = np.array(test.drop('LABEL', axis=1))
-    y_train = np.array(train.LABEL) #add classification-column "label"
-    y_test = np.array(test.LABEL)
+    # Loading data and defining the test and training data
+    raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTrain.csv", skiprows=1, delimiter=',')
+    x_train = raw_data[:, 1:]
+    y_train = raw_data[:, 0, np.newaxis] - 1.
+    raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTrain.csv", skiprows=1, delimiter=',')
+    x_test = raw_data[:, 1:]
+    y_test = raw_data[:, 0, np.newaxis] - 1.
+    del raw_data
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
@@ -74,12 +79,12 @@ def main():
     def batch_generator(x_train, y_train, batch_size=32):
         half_batch = batch_size // 2
         x_batch = np.empty((batch_size, x_train.shape[1], x_train.shape[2]), dtype='float32') #empty matrix for input
-        y_batch = np.empty((batch_size), dtype='float32') #empty matrix for output
+        y_batch = np.empty((batch_size, y_train.shape[1]), dtype='float32') #empty matrix for output
 
         # Find indicies for positive and negative labels
         while True:
-            pos_idx = np.where(y_train == 2)[0]
-            neg_idx = np.where(y_train == 1)[0]
+            pos_idx = np.where(y_train[:,0] == 1)[0]
+            neg_idx = np.where(y_train[:,0] == 0)[0]
             
             # Randomize the positive and negative indicies
             np.random.shuffle(pos_idx)
@@ -98,6 +103,37 @@ def main():
                 x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
             yield x_batch, y_batch
 
+    # # Define costume metrics
+    # def recall(y_true,true_neg)
+    #     return y_true//(y_true+true_neg)
+
+    def precision(y_true, y_pred):
+	    """Precision metric.
+	
+	    Only computes a batch-wise average of precision.
+	
+	    Computes the precision, a metric for multi-label classification of
+	    how many selected items are relevant.
+	    """
+	    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+	    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+	    precision = true_positives // (predicted_positives + K.epsilon())
+	    return precision
+	
+	
+    def recall(y_true, y_pred):
+        """Recall metric.
+
+        Only computes a batch-wise average of recall.
+
+        Computes the recall, a metric for multi-label classification of
+        how many relevant items are selected.
+        """
+        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+        possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+        recall = true_positives // (possible_positives + K.epsilon())
+        return recall
+
     # Compile model and train the model, make sure it converges
     model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), \
@@ -109,10 +145,16 @@ def main():
     model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
                                 validation_data=(x_test, y_test), 
-                                verbose=2, epochs=40,
+                                verbose=2, epochs=10,
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Plot convergence rate
+    #plt.plot(hist.history['recall'], color='g')
+    #plt.plot(hist.history['val_recall'], color='r')
+    #plt.show()
+    #plt.plot(hist.history['precision'], color='g')
+    #plt.plot(hist.history['val_precision'], color='r')
+    #plt.show()
     plt.plot(hist.history['loss'], color='b')
     plt.plot(hist.history['val_loss'], color='r')
     plt.show()
@@ -121,9 +163,21 @@ def main():
     plt.show()
 
     # Make predictions for test data
-    neg_idx = np.where(y_test[:,0] == 1.)[0]
-    pos_idx = np.where(y_test[:,0] == 2.)[0]
+    neg_idx = np.where(y_test == 0.)[0]
+    pos_idx = np.where(y_test == 1.)[0]
     y_pred = model.predict(x_test)[:,0]
+    
+    print(y_test[0:5])
+    print(y_pred[0:5])
+    
+    # Create confusion matrix for training data
+    matrix = confusion_matrix(y_test, y_pred)
+    print(matrix)
+    y_test = pd.Series(y_test, name='Actual')
+    y_pred = pd.Series(y_pred, name='Predicted')
+    df_confusion = pd.crosstab(y_test, y_pred)
+    print(df_confusion)
+
         
 print("Before main")
 if __name__ == '__main__':
