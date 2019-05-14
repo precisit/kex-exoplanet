@@ -147,7 +147,7 @@ def main():
     model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy',precision,recall])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
                                 validation_data=(x_test, y_test), 
-                                verbose=2, epochs=40,
+                                verbose=2, epochs=10,
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Plot convergence rate
@@ -173,18 +173,18 @@ def main():
     pos_idx = np.where(y_test == 1.)[0]
     y_pred = model.predict(x_test)[:,0]
     
-    #prediction = np.empty(len(y_pred), dtype=object)
-    y_pred = np.where(y_pred[:, 0]>=0.5, 1, 0)
+    pred = np.empty(len(y_pred), dtype=object)
+    pred = np.where(y_pred>=0.5, 1, 0)
 
     print(y_test[0:5])
     print(y_pred[0:5])
     
     # Create confusion matrix for training data
-    matrix = confusion_matrix(y_test, y_pred)
+    matrix = confusion_matrix(pred, y_test)
     print(matrix)
     y_test = pd.Series(y_test, name='Actual')
-    y_pred = pd.Series(y_pred, name='Predicted')
-    df_confusion = pd.crosstab(y_test, y_pred)
+    pred = pd.Series(pred, name='Predicted')
+    df_confusion = pd.crosstab(y_test, pred)
     print(df_confusion)
 
         
@@ -192,3 +192,4 @@ print("Before main")
 if __name__ == '__main__':
     print("In main")
     main()
+
