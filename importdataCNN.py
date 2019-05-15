@@ -129,13 +129,13 @@ def main():
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Plot convergence rate
-    plt.plot(hist.history['loss'], color='b')
-    plt.plot(hist.history['val_loss'], color='r')
+    plt.plot(hist.history['loss'], color='b',label='loss')
+    plt.plot(hist.history['val_loss'], color='r',label='validation loss')
     plt.title('Loss')
     plt.legend(loc='upper right')
     plt.show()
-    plt.plot(hist.history['acc'], color='b')
-    plt.plot(hist.history['val_acc'], color='r')
+    plt.plot(hist.history['acc'], color='b', label='accuracy')
+    plt.plot(hist.history['val_acc'], color='r', label='validation accuracy')
     plt.title('Accuracy')
     plt.legend(loc='upper right')
     plt.show()
