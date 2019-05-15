@@ -163,11 +163,24 @@ def main():
     # Create confusion matrix for training data
     y_test = pd.Series(y_test, name='Actual')
     pred = pd.Series(pred, name='Predicted')
-    confusion_matix = pd.crosstab(y_test, pred)
-    print(confusion_matrix)     
+    conf_matrix = pd.crosstab(y_test, pred)
+    print(conf_matrix)
+    print(conf_matrix.loc[0,0])
+    
+    # Define values in confusion matrix
+    true_pos = conf_matrix.loc[1,1]
+    false_pos = conf_matrix.loc[0,1]
+    true_neg = conf_matrix.loc[0,0]
+    false_neg = conf_matrix.loc[1,0]
+    
+    # Calculate precision and recall
+    precision = true_pos // (true_pos + false_pos)
+    print(precision)
+    recall = true_pos // (true_pos + false_neg)
+    print(recall)
+    
         
 print("Before main")
 if __name__ == '__main__':
     print("In main")
     main()
-
