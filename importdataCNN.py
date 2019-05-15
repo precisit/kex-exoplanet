@@ -22,6 +22,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Define main function
 def main():
+    # Converting the formate from dataframe to numpy arrays (matrices)
+    # and defining x-values and y-values for both the test and training set
     print("Loading datasets...")
     train = pd.read_csv("gdrive/My Drive/datasets/exoTrain.csv", encoding= "ISO-8859-1") #on data frame format
     test = pd.read_csv("gdrive/My Drive/datasets/exoTest.csv", encoding= "ISO-8859-1") #on data frame format
@@ -33,28 +35,6 @@ def main():
     y_train = np.array(y_train).reshape((-1,1))-1
     x_test = np.array(x_test)
     y_test = np.array(y_test).reshape((-1,1))-1 
-    
-    print(y_train)
-    print(y_train.shape)
-
-    # Converting the formate from dataframe to numpy arrays (matrices)
-    # and defining x-values and y-values for both the test and training set
-    #raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTrain.csv", skiprows=1, delimiter=',')
-    #x_train = raw_data[:, 1:]
-    #y_train = raw_data[:, 0, np.newaxis] - 1.
-    #raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTest.csv", skiprows=1, delimiter=',')
-    #x_test = raw_data[:, 1:]
-    #y_test = raw_data[:, 0, np.newaxis] - 1.
-    #del raw_data
-    
-    #x_train = np.array(x_train)
-    #y_train = np.array(y_train)
-    #x_test = np.array(x_test)
-    #y_test = np.array(y_test)
-    
-    #print(y_train)
-    #print(y_train[1])
-    #print(y_train.shape)
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
@@ -134,35 +114,6 @@ def main():
                 x_batch[i] = np.roll(x_batch[i], sz, axis = 0)
             yield x_batch, y_batch
 
-    # # Define costume metrics
-    # def recall(y_true,true_neg)
-    #     return y_true//(y_true+true_neg)
-
-    def precision(y_true, y_pred):
-	    """Precision metric.
-	
-	    Only computes a batch-wise average of precision.
-	
-	    Computes the precision, a metric for multi-label classification of
-	    how many selected items are relevant.
-	    """
-	    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-	    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-	    precision = true_positives // (predicted_positives + K.epsilon())
-	    return precision
-	
-	
-    def recall(y_true, y_pred):
-        """Recall metric.
-        Only computes a batch-wise average of recall.
-        Computes the recall, a metric for multi-label classification of
-        how many relevant items are selected.
-        """
-        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-        recall = true_positives // (possible_positives + K.epsilon())
-        return recall
-
     # Compile model and train the model, make sure it converges
     model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), \
@@ -171,12 +122,11 @@ def main():
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Proceeding the training with faster learning rate
-    model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy',precision,recall])
+    model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
                                 validation_data=(x_test, y_test), 
                                 verbose=2, epochs=10,
                                 steps_per_epoch=x_train.shape[0]//32)
-
 
     # Saving model to JSON and weights to HDF5
     model_json = model.to_json()
@@ -185,22 +135,17 @@ def main():
     model.save_weights("model.h5")
     print("Saved model to disk")
 
-    # Plot convergence rate
-    #plt.plot(hist.history['recall'], color='g')
-    #plt.plot(hist.history['val_recall'], color='r')
-    #plt.title('Recall')
-    #plt.show()
-    #plt.plot(hist.history['precision'], color='g')
-    #plt.plot(hist.history['val_precision'], color='r')
-    #plt.title('Precision')
-    #plt.show()
-    plt.plot(hist.history['loss'], color='b')
-    plt.plot(hist.history['val_loss'], color='r')
+    plt.plot(hist.history['loss'], color='b',label='loss')
+    plt.plot(hist.history['val_loss'], color='r',label='validation loss')
     plt.title('Loss')
+    plt.xlabel('Epochs')
+    plt.legend(loc='upper right')
     plt.show()
-    plt.plot(hist.history['acc'], color='b')
-    plt.plot(hist.history['val_acc'], color='r')
+    plt.plot(hist.history['acc'], color='b',label='accuracy')
+    plt.plot(hist.history['val_acc'], color='r',label='validation accuracy')
     plt.title('Accuracy')
+    plt.xlabel('Epochs')
+    plt.legend(loc='upper right')
     plt.show()
 
     # Make predictions for test data
@@ -214,19 +159,12 @@ def main():
 
     y_test = np.reshape(y_test,len(y_test))
     pred = np.reshape(pred,len(pred))
-    print(y_test[0:5])
-    print(pred[0:5])
-    print(y_test.shape)
-    print(pred.shape)
     
     # Create confusion matrix for training data
     y_test = pd.Series(y_test, name='Actual')
     pred = pd.Series(pred, name='Predicted')
-    df_confusion = pd.crosstab(y_test, pred)
-    print(df_confusion)    
-    matrix = confusion_matrix(pred, y_test)
-    print(matrix)  
-
+    confusion_matix = pd.crosstab(y_test, pred)
+    print(confusion_matrix)     
         
 print("Before main")
 if __name__ == '__main__':
