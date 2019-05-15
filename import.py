@@ -36,6 +36,7 @@ def main():
     Xd= np.array(df_dev_x)
     Yd= np.array(df_dev_y)
     
+    print(Y)
 
     model=LinearSVC()
     print("Training...")
