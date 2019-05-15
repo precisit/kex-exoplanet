@@ -25,19 +25,36 @@ def main():
     print("Loading datasets...")
     train = pd.read_csv("gdrive/My Drive/datasets/exoTrain.csv", encoding= "ISO-8859-1") #on data frame format
     test = pd.read_csv("gdrive/My Drive/datasets/exoTest.csv", encoding= "ISO-8859-1") #on data frame format
-
-    # Converting the formate from dataframe to numpy arrays (matrices)
-    # and defining x-values and y-values for both the test and training set
-    raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTrain.csv", skiprows=1, delimiter=',')
-    x_train = raw_data[:, 1:]
-    y_train = raw_data[:, 0, np.newaxis] - 1.
-    raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTrain.csv", skiprows=1, delimiter=',')
-    x_test = raw_data[:, 1:]
-    y_test = raw_data[:, 0, np.newaxis] - 1.
-    del raw_data
+    x_train = train.drop('LABEL', axis=1)
+    x_test = test.drop('LABEL', axis=1)
+    y_train = train.LABEL
+    y_test = test.LABEL
+    x_train = np.array(x_train)
+    y_train = np.array(y_train).reshape((-1,1))-1
+    x_test = np.array(x_test)
+    y_test = np.array(y_test).reshape((-1,1))-1 
     
     print(y_train)
     print(y_train.shape)
+
+    # Converting the formate from dataframe to numpy arrays (matrices)
+    # and defining x-values and y-values for both the test and training set
+    #raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTrain.csv", skiprows=1, delimiter=',')
+    #x_train = raw_data[:, 1:]
+    #y_train = raw_data[:, 0, np.newaxis] - 1.
+    #raw_data = np.loadtxt("gdrive/My Drive/datasets/exoTest.csv", skiprows=1, delimiter=',')
+    #x_test = raw_data[:, 1:]
+    #y_test = raw_data[:, 0, np.newaxis] - 1.
+    #del raw_data
+    
+    #x_train = np.array(x_train)
+    #y_train = np.array(y_train)
+    #x_test = np.array(x_test)
+    #y_test = np.array(y_test)
+    
+    #print(y_train)
+    #print(y_train[1])
+    #print(y_train.shape)
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
@@ -77,6 +94,13 @@ def main():
     model.add(Dropout(0.25)) #prevents overfitting
     model.add(Dense(64, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
+    
+    #Define a function for shuffeling in unison
+    def shuffle_in_unison(a, b):
+      rng_state = np.random.get_state()
+      np.random.shuffle(a)
+      np.random.set_state(rng_state)
+      np.random.shuffle(b)
 
     # Define function that generates batch with equally positive
     # and negative samples, and rotates them randomly in time
@@ -96,10 +120,13 @@ def main():
 
             # Let half of the batch have a positive classification and the other
             # half have a negative classification
-            x_batch[:half_batch] = x_train[pos_idx[:half_batch]] 
+            x_batch[:half_batch] = x_train[pos_idx[:half_batch]]
             x_batch[half_batch:] = x_train[neg_idx[half_batch:batch_size]] 
             y_batch[:half_batch] = y_train[pos_idx[:half_batch]]
             y_batch[half_batch:] = y_train[neg_idx[half_batch:batch_size]]
+            
+            # Shuffle batch
+            shuffle_in_unison(x_batch,y_batch)
 
             # Generating new examples by rotating them in time
             for i in range(batch_size):
@@ -151,14 +178,14 @@ def main():
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Plot convergence rate
-    plt.plot(hist.history['recall'], color='g')
-    plt.plot(hist.history['val_recall'], color='r')
-    plt.title('Recall')
-    plt.show()
-    plt.plot(hist.history['precision'], color='g')
-    plt.plot(hist.history['val_precision'], color='r')
-    plt.title('Precision')
-    plt.show()
+    #plt.plot(hist.history['recall'], color='g')
+    #plt.plot(hist.history['val_recall'], color='r')
+    #plt.title('Recall')
+    #plt.show()
+    #plt.plot(hist.history['precision'], color='g')
+    #plt.plot(hist.history['val_precision'], color='r')
+    #plt.title('Precision')
+    #plt.show()
     plt.plot(hist.history['loss'], color='b')
     plt.plot(hist.history['val_loss'], color='r')
     plt.title('Loss')
@@ -169,27 +196,31 @@ def main():
     plt.show()
 
     # Make predictions for test data
-    neg_idx = np.where(y_test == 0.)[0]
-    pos_idx = np.where(y_test == 1.)[0]
+    neg_idx = np.where(y_test == 0)[0]
+    pos_idx = np.where(y_test == 1)[0]
+    shuffle_in_unison(x_test,y_test)
     y_pred = model.predict(x_test)[:,0]
     
-    pred = np.empty(len(y_pred), dtype=object)
+    pred = np.empty((1,len(y_pred)), dtype=object)
     pred = np.where(y_pred>=0.5, 1, 0)
 
+    y_test = np.reshape(y_test,len(y_test))
+    pred = np.reshape(pred,len(pred))
     print(y_test[0:5])
-    print(y_pred[0:5])
+    print(pred[0:5])
+    print(y_test.shape)
+    print(pred.shape)
     
     # Create confusion matrix for training data
-    matrix = confusion_matrix(pred, y_test)
-    print(matrix)
     y_test = pd.Series(y_test, name='Actual')
     pred = pd.Series(pred, name='Predicted')
     df_confusion = pd.crosstab(y_test, pred)
-    print(df_confusion)
+    print(df_confusion)    
+    matrix = confusion_matrix(pred, y_test)
+    print(matrix)  
 
         
 print("Before main")
 if __name__ == '__main__':
     print("In main")
     main()
-
