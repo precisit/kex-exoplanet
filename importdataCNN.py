@@ -177,6 +177,14 @@ def main():
                                 verbose=2, epochs=10,
                                 steps_per_epoch=x_train.shape[0]//32)
 
+
+    # Saving model to JSON and weights to HDF5
+    model_json = model.to_json()
+    with open("model.json", "w") as  json_file:
+      json_file.write(model_json)
+    model.save_weights("model.h5")
+    print("Saved model to disk")
+
     # Plot convergence rate
     #plt.plot(hist.history['recall'], color='g')
     #plt.plot(hist.history['val_recall'], color='r')
