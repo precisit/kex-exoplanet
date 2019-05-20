@@ -4,16 +4,17 @@
 # Import packages
 import pandas as pd
 import numpy as np
-import pickle
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
-                            confusion_matrix, fbeta_score, precision_recall_curve
+                            confusion_matrix, fbeta_score, precision_recall_curve, \
+                            average_precision_score
 from keras import backend as K
 from keras.models import Sequential, Model
 from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
 BatchNormalization, Input, concatenate, Activation
 from keras.optimizers import Adam
+from inspect import signature
 from google.colab import drive
 drive.mount('/content/gdrive')
 
@@ -161,8 +162,6 @@ def main():
     y_test = np.reshape(y_test,len(y_test))
     pred = np.reshape(pred,len(pred))
     
-    print(y_test[0:10])
-    
     # Create confusion matrix for training data
     conf_matrix = pd.crosstab(y_test, pred)
     print(conf_matrix)
@@ -174,20 +173,9 @@ def main():
     fbeta = fbeta_score(y_test, pred, 1)
     print('Accuracy: %.3f Precision: %.3f Recall: %.3f F_beta: %.3f' \
           % (accuracy, precision, recall, fbeta))
-    
-    from inspect import signature
-    from sklearn.metrics import average_precision_score
 
     average_precision = average_precision_score(y_test, pred)
-    
-    print('y_test and pred:')
-    print(y_test[0:10])
-    print(pred[0:10])
-
-    precision, recall, thresholds = precision_recall_curve(y_test, pred, pos_label=1)
-    print(precision)
-    print(recall)
-    print(thresholds)
+    precision, recall, thresholds = precision_recall_curve(y_test, y_pred, pos_label=1)
 
     # In matplotlib < 1.5, plt.fill_between does not have a 'step' argument
     step_kwargs = ({'step': 'post'}
