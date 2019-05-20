@@ -178,7 +178,6 @@ def main():
     print(precision)
     recall = true_pos // (true_pos + false_neg)
     print(recall)
-    
         
 print("Before main")
 if __name__ == '__main__':
