@@ -161,9 +161,9 @@ def main():
     y_test = np.reshape(y_test,len(y_test))
     pred = np.reshape(pred,len(pred))
     
+    print(y_test[0:10])
+    
     # Create confusion matrix for training data
-    y_test = pd.Series(y_test, name='Actual')
-    pred = pd.Series(pred, name='Predicted')
     conf_matrix = pd.crosstab(y_test, pred)
     print(conf_matrix)
     
@@ -179,10 +179,15 @@ def main():
     from sklearn.metrics import average_precision_score
 
     average_precision = average_precision_score(y_test, pred)
+    
+    print('y_test and pred:')
+    print(y_test[0:10])
+    print(pred[0:10])
 
-    precision, recall, thresholds = precision_recall_curve(y_test, pred)
+    precision, recall, thresholds = precision_recall_curve(y_test, pred, pos_label=1)
     print(precision)
     print(recall)
+    print(thresholds)
 
     # In matplotlib < 1.5, plt.fill_between does not have a 'step' argument
     step_kwargs = ({'step': 'post'}
