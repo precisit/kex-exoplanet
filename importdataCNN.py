@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
                             confusion_matrix, fbeta_score, precision_recall_curve, \
-                            average_precision_score
+                            average_precision_score, auc
 from keras import backend as K
 from keras.models import Sequential, Model
 from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
@@ -33,10 +33,16 @@ def main():
     x_test = test.drop('LABEL', axis=1)
     y_train = train.LABEL
     y_test = test.LABEL
-    x_train = np.array(x_train)
-    y_train = np.array(y_train).reshape((-1,1))-1
+    x_train = np.array(x_train) #change to numpy array format
+    y_train = np.array(y_train)-1 #set binary labels to 0 and 1
     x_test = np.array(x_test)
-    y_test = np.array(y_test).reshape((-1,1))-1 
+    y_test = np.array(y_test)-1 
+    
+    # Add extra positive examples of light curves by flipping them
+    x_train = np.append(x_train, np.flip(x_train[0:37,:], axis=-1), axis=0)
+    y_train = np.append(y_train, y_train[0:37]).reshape((-1,1))
+    x_test = np.append(x_test, np.flip(x_test[0:5,:], axis=-1), axis=0)
+    y_test = np.append(y_test, y_test[0:5]).reshape((-1,1))
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
@@ -151,14 +157,10 @@ def main():
     plt.show()
 
     # Make predictions for test data
-    neg_idx = np.where(y_test == 0)[0]
-    pos_idx = np.where(y_test == 1)[0]
-    shuffle_in_unison(x_test,y_test)
+    shuffle_in_unison(x_test,y_test) 
     y_pred = model.predict(x_test)[:,0]
-    
-    pred = np.empty((1,len(y_pred)), dtype=object)
-    pred = np.where(y_pred>=0.5, 1, 0)
-
+    pred = np.empty((1,len(y_pred)), dtype=object) #create empty matrix for classification
+    pred = np.where(y_pred>=0.5, 1, 0) #make classification
     y_test = np.reshape(y_test,len(y_test))
     pred = np.reshape(pred,len(pred))
     
@@ -166,31 +168,29 @@ def main():
     conf_matrix = pd.crosstab(y_test, pred)
     print(conf_matrix)
     
-    # Calculate precision and recall
+    # Calculate accuracy, precision, recall and f_beta
     accuracy = accuracy_score(y_test, pred)
     precision = precision_score(y_test, pred)
     recall = recall_score(y_test, pred)
     fbeta = fbeta_score(y_test, pred, 1)
     print('Accuracy: %.3f Precision: %.3f Recall: %.3f F_beta: %.3f' \
           % (accuracy, precision, recall, fbeta))
-
-    average_precision = average_precision_score(y_test, pred)
+    
+    # Make a precesion-recall-curve
     precision, recall, thresholds = precision_recall_curve(y_test, y_pred, pos_label=1)
-
-    # In matplotlib < 1.5, plt.fill_between does not have a 'step' argument
+    auc_pr = auc(recall, precision)
+    print('Area under precision-recall-curve: %.3f' % (auc_pr))
     step_kwargs = ({'step': 'post'}
                    if 'step' in signature(plt.fill_between).parameters
                    else {})
     plt.step(recall, precision, color='b', alpha=0.2,
              where='post')
     plt.fill_between(recall, precision, alpha=0.2, color='b', **step_kwargs)
-
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
-    plt.title('2-class Precision-Recall curve: AP={0:0.2f}'.format(
-              average_precision))
+    plt.title('Precision-Recall Curve')
         
 print("Before main")
 if __name__ == '__main__':
