@@ -7,7 +7,8 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d
-from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, \
+                            confusion_matrix, fbeta_score, precision_recall_curve
 from keras import backend as K
 from keras.models import Sequential, Model
 from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
@@ -165,19 +166,38 @@ def main():
     pred = pd.Series(pred, name='Predicted')
     conf_matrix = pd.crosstab(y_test, pred)
     print(conf_matrix)
-    print(conf_matrix.loc[0,0])
-    
-    # Define values in confusion matrix
-    true_pos = conf_matrix.loc[1,1]
-    false_pos = conf_matrix.loc[0,1]
-    true_neg = conf_matrix.loc[0,0]
-    false_neg = conf_matrix.loc[1,0]
     
     # Calculate precision and recall
-    precision = true_pos // (true_pos + false_pos)
+    accuracy = accuracy_score(y_test, pred)
+    precision = precision_score(y_test, pred)
+    recall = recall_score(y_test, pred)
+    fbeta = fbeta_score(y_test, pred, 1)
+    print('Accuracy: %.3f Precision: %.3f Recall: %.3f F_beta: %.3f' \
+          % (accuracy, precision, recall, fbeta))
+    
+    from inspect import signature
+    from sklearn.metrics import average_precision_score
+
+    average_precision = average_precision_score(y_test, pred)
+
+    precision, recall, thresholds = precision_recall_curve(y_test, pred)
     print(precision)
-    recall = true_pos // (true_pos + false_neg)
     print(recall)
+
+    # In matplotlib < 1.5, plt.fill_between does not have a 'step' argument
+    step_kwargs = ({'step': 'post'}
+                   if 'step' in signature(plt.fill_between).parameters
+                   else {})
+    plt.step(recall, precision, color='b', alpha=0.2,
+             where='post')
+    plt.fill_between(recall, precision, alpha=0.2, color='b', **step_kwargs)
+
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.ylim([0.0, 1.05])
+    plt.xlim([0.0, 1.0])
+    plt.title('2-class Precision-Recall curve: AP={0:0.2f}'.format(
+              average_precision))
         
 print("Before main")
 if __name__ == '__main__':
