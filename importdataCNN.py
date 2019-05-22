@@ -39,6 +39,12 @@ def main():
     y_train = np.array(y_train).reshape((-1,1))-1
     x_test = np.array(x_test)
     y_test = np.array(y_test).reshape((-1,1))-1 
+    
+    # Add extra positive examples of light curves by flipping them
+    x_train = np.append(x_train, np.flip(x_train[0:37,:], axis=-1), axis=0)
+    y_train = np.append(y_train, y_train[0:37]).reshape((-1,1))
+    x_test = np.append(x_test, np.flip(x_test[0:5,:], axis=-1), axis=0)
+    y_test = np.append(y_test, y_test[0:5]).reshape((-1,1))
   
     # Plotting the unprocessed light curve
     plt.subplot(2, 1, 1)
