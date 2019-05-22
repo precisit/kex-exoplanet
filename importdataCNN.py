@@ -5,7 +5,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.ndimage.filters import uniform_filter1d
+from scipy.ndimage.filters import uniform_filter1d, gaussian_filter
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
                             confusion_matrix, fbeta_score, precision_recall_curve, \
                             average_precision_score, auc
@@ -14,11 +14,13 @@ from keras.models import Sequential, Model
 from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
 BatchNormalization, Input, concatenate, Activation
 from keras.optimizers import Adam
+import warnings
+warnings.filterwarnings('ignore')
 from inspect import signature
 from google.colab import drive
 drive.mount('/content/gdrive')
 
-# Just disables the warning, doesn't enable AVX/FMA
+# Just disables a warning, doesn't enable AVX/FMA
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -48,14 +50,27 @@ def main():
     plt.subplot(2, 1, 1)
     plt.plot(x_train[1, :], '.')
     plt.title('Unprocessed light curve')
-
+    
+    def detrender_normalizer(light_flux):
+      flux1 = light_flux
+      flux2 = gaussian_filter(flux1, sigma=10)
+      flux3 = flux1 - flux2
+      flux3normalized = (flux3-np.mean(flux3)) / (np.max(flux3)-np.min(flux3))
+      return flux3normalized
+    
+    x_train_p = detrender_normalizer(x_train)
+    x_test_p = detrender_normalizer(x_test)
+    
     # Scale each observation to zero mean and unit variance
     x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
     x_test = ((x_test - np.mean(x_test, axis=1).reshape(-1,1)) / np.std(x_test, axis=1).reshape(-1,1))
-
+  
     # Preprocessing data
-    x_train = np.stack([x_train, uniform_filter1d(x_train, axis=1, size=200)], axis=2)
-    x_test = np.stack([x_test, uniform_filter1d(x_test, axis=1, size=200)], axis=2)
+    x_train = np.stack([x_train, x_train_p], axis=2) #change variable name x_train_p
+    x_test = np.stack([x_test, x_test_p], axis=2)
+    
+    print(x_train.shape)
+    print(type(x_train))
 
     # Plotting the processed light curve
     plt.subplot(2, 1, 2)
@@ -65,7 +80,7 @@ def main():
 
     # Construct the neural network
     model = Sequential()
-    model.add(Conv1D(filters=8, kernel_size=11, activation='relu', input_shape=x_train.shape[1:]))
+    model.add(Conv1D(filters=8, kernel_size=11, activation='linear', input_shape=x_train.shape[1:]))
     model.add(MaxPool1D(strides=4))
     model.add(BatchNormalization())
     model.add(Conv1D(filters=16, kernel_size=11, activation='relu'))
@@ -133,7 +148,7 @@ def main():
     model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
                                 validation_data=(x_test, y_test), 
-                                verbose=2, epochs=10,
+                                verbose=2, epochs=60,
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Saving model to JSON and weights to HDF5
