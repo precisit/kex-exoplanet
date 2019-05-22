@@ -47,21 +47,6 @@ def main():
     
     '''
     # Plot some positive examples
-    plt_num = 0;
-    for i in [0,2,8,30]:
-      plt_num = plt_num + 1
-      flux = x_train[i,:]
-      time = np.arange(len(flux)) * (36.0/60.0) #time in units of hours
-      plt.subplot(2,2,plt_num)
-      #plt.figure(figsize=(15,5))
-      #plt.suptitle('Hej')
-      plt.title('Flux of star {} with confirmed exoplanets'.format(i+1))
-      plt.ylabel('Flux [e/s]')
-      plt.xlabel('Time [hours]')
-      plt.plot(time, flux)
-    '''
-    '''
-    # Plot some positive examples
     time = np.arange(len(x_train[0,:])) * (36.0/60.0)
     fig, axs = plt.subplots(2, 2,figsize=(15, 6))
     fig.subplots_adjust(hspace = .2, wspace=.05)
@@ -111,6 +96,7 @@ def main():
     flux_normalized = (flux_smoothed-np.mean(flux_smoothed))/(np.max(flux_smoothed)-np.min(flux_smoothed))
     flux_zeromean = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
     
+    # Detrended preprocessing
     time = np.arange(len(x_train[0,:])) * (36.0/60.0)
     fig, axs = plt.subplots(1, 4,figsize=(18, 2))
     fig.subplots_adjust(hspace = .2, wspace=.2)    
@@ -123,48 +109,13 @@ def main():
     axs[3].plot(time,flux_normalized)
     axs[3].set_title('Normalized flattened flux')
     
-    print('space')
-    
+    # Zero mean unit variance preprocessing
     fig2, axs = plt.subplots(1, 2,figsize=(8.5,2))
     fig2.subplots_adjust(hspace = .2, wspace=.2)
     axs[0].plot(time,flux_unprocessed)
     axs[0].set_title('Unprocessed flux')
     axs[1].plot(time,flux_zeromean[13,:])
     axs[1].set_title('Normalization zero mean unit variance flux')
-    
-    '''
-    # Plotting the unprocessed light curve
-    plt.subplot(2, 1, 1)
-    plt.plot(x_train[1, :], '.')
-    plt.title('Unprocessed light curve')
-    
-    def detrender_normalizer(light_flux):
-      flux1 = light_flux
-      flux2 = gaussian_filter(flux1, sigma=10)
-      flux3 = flux1 - flux2
-      flux3normalized = (flux3-np.mean(flux3)) / (np.max(flux3)-np.min(flux3))
-      return flux3normalized
-    
-    x_train_p = detrender_normalizer(x_train)
-    x_test_p = detrender_normalizer(x_test)
-    
-    # Scale each observation to zero mean and unit variance
-    x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
-    x_test = ((x_test - np.mean(x_test, axis=1).reshape(-1,1)) / np.std(x_test, axis=1).reshape(-1,1))
-  
-    # Preprocessing data
-    x_train = np.stack([x_train, x_train_p], axis=2) #change variable name x_train_p
-    x_test = np.stack([x_test, x_test_p], axis=2)
-    
-    print(x_train.shape)
-    print(type(x_train))
-
-    # Plotting the processed light curve
-    plt.subplot(2, 1, 2)
-    plt.plot(x_train[1, :], '.')
-    plt.title('Processed light curve')
-    plt.show() 
-    '''
     
 print("Before main")
 if __name__ == '__main__':
