@@ -31,8 +31,16 @@ def main():
     loaded_model.load_weights("model.h5")
     print("Loaded model from disk")
 
-    loaded_model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+    
     loaded_model.summary()
+
+
+    #Define a function for shuffeling in unison
+    def shuffle_in_unison(a, b):
+      rng_state = np.random.get_state()
+      np.random.shuffle(a)
+      np.random.set_state(rng_state)
+      np.random.shuffle(b)
 
     # Converting the formate from dataframe to numpy arrays (matrices)
     # and defining x-values and y-values for both the test and training set
@@ -51,7 +59,13 @@ def main():
 
 
     # evaluate loaded model on test data
-    loaded_model.compile(optimizer=Adam(1e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
+ 
+    
+   
+    neg_idx = np.where(y_test == 0)[0]
+    pos_idx = np.where(y_test == 1)[0]
+    shuffle_in_unison(x_test,y_test)
+   
 
     y_prediction = loaded_model.predict(x_test)[:,0]
     predction = np.empty((1,len(y_prediction)), dtype=object)
