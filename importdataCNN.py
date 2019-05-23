@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.filters import uniform_filter1d, gaussian_filter
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
                             confusion_matrix, fbeta_score, precision_recall_curve, \
-                            average_precision_score
+                            average_precision_score, auc
 from keras import backend as K
 from keras.models import Sequential, Model
 from keras.layers import Conv1D, MaxPool1D, Dense, Dropout, Flatten, \
@@ -45,12 +45,8 @@ def main():
     y_train = np.append(y_train, y_train[0:37]).reshape((-1,1))
     x_test = np.append(x_test, np.flip(x_test[0:5,:], axis=-1), axis=0)
     y_test = np.append(y_test, y_test[0:5]).reshape((-1,1))
-  
-    # Plotting the unprocessed light curve
-    plt.subplot(2, 1, 1)
-    plt.plot(x_train[1, :], '.')
-    plt.title('Unprocessed light curve')
     
+    # Define detrender function
     def detrender_normalizer(light_flux):
       flux1 = light_flux
       flux2 = gaussian_filter(flux1, sigma=10)
@@ -58,6 +54,7 @@ def main():
       flux3normalized = (flux3-np.mean(flux3)) / (np.max(flux3)-np.min(flux3))
       return flux3normalized
     
+    # Detrend the data sets
     x_train_p = detrender_normalizer(x_train)
     x_test_p = detrender_normalizer(x_test)
     
@@ -65,19 +62,10 @@ def main():
     x_train = ((x_train - np.mean(x_train, axis=1).reshape(-1,1)) / np.std(x_train, axis=1).reshape(-1,1))
     x_test = ((x_test - np.mean(x_test, axis=1).reshape(-1,1)) / np.std(x_test, axis=1).reshape(-1,1))
   
-    # Preprocessing data
-    x_train = np.stack([x_train, x_train_p], axis=2) #change variable name x_train_p
+    # Stack the zero mean unit variance normalized data and the detrended data
+    x_train = np.stack([x_train, x_train_p], axis=2)
     x_test = np.stack([x_test, x_test_p], axis=2)
     
-    print(x_train.shape)
-    print(type(x_train))
-
-    # Plotting the processed light curve
-    plt.subplot(2, 1, 2)
-    plt.plot(x_train[1, :], '.')
-    plt.title('Processed light curve')
-    plt.show()
-
     # Construct the neural network
     model = Sequential()
     model.add(Conv1D(filters=8, kernel_size=11, activation='linear', input_shape=x_train.shape[1:]))
@@ -148,7 +136,7 @@ def main():
     model.compile(optimizer=Adam(4e-5), loss = 'binary_crossentropy', metrics=['accuracy'])
     hist = model.fit_generator(batch_generator(x_train, y_train, 32), 
                                 validation_data=(x_test, y_test), 
-                                verbose=2, epochs=60,
+                                verbose=2, epochs=50,
                                 steps_per_epoch=x_train.shape[0]//32)
 
     # Saving model to JSON and weights to HDF5
@@ -158,6 +146,7 @@ def main():
     model.save_weights("model.h5")
     print("Saved model to disk")
 
+    # Plot the loss and accuracy for the training
     plt.plot(hist.history['loss'], color='b',label='loss')
     plt.plot(hist.history['val_loss'], color='r',label='validation loss')
     plt.title('Loss')
@@ -170,20 +159,55 @@ def main():
     plt.xlabel('Epochs')
     plt.legend(loc='upper right')
     plt.show()
-
-    # Make predictions for test data
-    neg_idx = np.where(y_test == 0)[0]
-    pos_idx = np.where(y_test == 1)[0]
-    shuffle_in_unison(x_test,y_test)
-    y_pred = model.predict(x_test)[:,0]
     
+    #Make predictions for training data
+    shuffle_in_unison(x_train,y_train)
+    y_pred = model.predict(x_train)[:,0]
     pred = np.empty((1,len(y_pred)), dtype=object)
     pred = np.where(y_pred>=0.5, 1, 0)
-
-    y_test = np.reshape(y_test,len(y_test))
+    y_train = np.reshape(y_train,len(y_train))
     pred = np.reshape(pred,len(pred))
     
     # Create confusion matrix for training data
+    print('Validation for training data:')
+    conf_matrix = pd.crosstab(y_train, pred)
+    print(conf_matrix)
+    
+    # Calculate precision and recall
+    accuracy = accuracy_score(y_train, pred)
+    precision = precision_score(y_train, pred)
+    recall = recall_score(y_train, pred)
+    fbeta = fbeta_score(y_train, pred, 1)
+    print('Accuracy: %.3f Precision: %.3f Recall: %.3f F_beta: %.3f' \
+          % (accuracy, precision, recall, fbeta))
+    
+    # Create a precision recall curve
+    precision, recall, thresholds = precision_recall_curve(y_train, y_pred, pos_label=1)
+    auc_pr = auc(recall, precision)
+    print('Area under precision-recall-curve: %.3f' % (auc_pr))
+    step_kwargs = ({'step': 'post'}
+                   if 'step' in signature(plt.fill_between).parameters
+                   else {})
+    plt.step(recall, precision, color='b', alpha=0.2,
+             where='post')
+    plt.fill_between(recall, precision, alpha=0.2, color='b', **step_kwargs)
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.ylim([0.0, 1.05])
+    plt.xlim([0.0, 1.0])
+    plt.title('Precision-Recall Curve')
+    plt.show()
+
+    # Make predictions for test data
+    shuffle_in_unison(x_test,y_test)
+    y_pred = model.predict(x_test)[:,0] 
+    pred = np.empty((1,len(y_pred)), dtype=object)
+    pred = np.where(y_pred>=0.5, 1, 0)
+    y_test = np.reshape(y_test,len(y_test))
+    pred = np.reshape(pred,len(pred))
+    
+    # Create confusion matrix for test data
+    print('Validation for test data:')
     conf_matrix = pd.crosstab(y_test, pred)
     print(conf_matrix)
     
@@ -194,26 +218,25 @@ def main():
     fbeta = fbeta_score(y_test, pred, 1)
     print('Accuracy: %.3f Precision: %.3f Recall: %.3f F_beta: %.3f' \
           % (accuracy, precision, recall, fbeta))
-
-    average_precision = average_precision_score(y_test, pred)
+    
+    # Create a precision recall curve
     precision, recall, thresholds = precision_recall_curve(y_test, y_pred, pos_label=1)
-
-    # In matplotlib < 1.5, plt.fill_between does not have a 'step' argument
+    auc_pr = auc(recall, precision)
+    print('Area under precision-recall-curve: %.3f' % (auc_pr))
     step_kwargs = ({'step': 'post'}
                    if 'step' in signature(plt.fill_between).parameters
                    else {})
     plt.step(recall, precision, color='b', alpha=0.2,
              where='post')
     plt.fill_between(recall, precision, alpha=0.2, color='b', **step_kwargs)
-
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
-    plt.title('2-class Precision-Recall curve: AP={0:0.2f}'.format(
-              average_precision))
+    plt.title('Precision-Recall Curve')
     plt.show()
-
+    
+    '''
     b = np.reshape(y_pred, (570,1))
     N = np.sum(y_test == 0)
     P = np.sum(y_test == 1)
@@ -234,6 +257,7 @@ def main():
     
     plt.plot(false_positive_rate, true_positive_rate)
     plt.show()
+    '''
     
         
 print("Before main")
