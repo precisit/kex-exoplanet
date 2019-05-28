@@ -1,5 +1,4 @@
-# Program that imports and preprocesses data to meet
-# reqiuerments that CNN have on input data
+# Program for an already saved CNN-model
 
 # Import packages
 import pandas as pd
