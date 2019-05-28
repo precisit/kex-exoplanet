@@ -17,7 +17,7 @@ import warnings
 warnings.filterwarnings('ignore')
 from inspect import signature
 from google.colab import drive
-#drive.mount('/content/gdrive')
+drive.mount('/content/gdrive')
 
 # Just disables a warning, doesn't enable AVX/FMA
 import os
@@ -45,7 +45,6 @@ def main():
     x_test = np.append(x_test, np.flip(x_test[0:5,:], axis=-1), axis=0)
     y_test = np.append(y_test, y_test[0:5]).reshape((-1,1))
     
-    '''
     # Plot some positive examples
     time = np.arange(len(x_train[0,:])) * (36.0/60.0)
     fig, axs = plt.subplots(2, 2,figsize=(15, 6))
@@ -66,8 +65,7 @@ def main():
     # Hide x labels and tick labels for top plots and y ticks for right plots.
     for ax in axs.flat:
         ax.label_outer()  
-    '''
-    '''
+    
     # Plot some negative examples
     time = np.arange(len(x_train[0,:])) * (36.0/60.0)
     fig, axs = plt.subplots(2, 2,figsize=(15, 6))
@@ -88,7 +86,7 @@ def main():
     # Hide x labels and tick labels for top plots and y ticks for right plots.
     for ax in axs.flat:
         ax.label_outer()
-    '''   
+       
     # Plot the preprocessing steps
     flux_unprocessed = x_train[13,:]
     flux_gaussian = gaussian_filter(flux_unprocessed, sigma=10)
