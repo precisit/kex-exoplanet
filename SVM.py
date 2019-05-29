@@ -98,7 +98,7 @@ def main():
     accuracy_train=accuracy_score(Y_train,train_outputs)
     accuracy_test=accuracy_score(Y_test,test_outputs)
     precision_train=precision_score(Y_train,train_outputs)
-    precision_test=precision_score(Y_train,test_outputs)
+    precision_test=precision_score(Y_test,test_outputs)
     recall_train = recall_score(Y_train, train_outputs)
     recall_test = recall_score(Y_test,test_outputs)
     f1_train = f1_score(Y_train,train_outputs)
