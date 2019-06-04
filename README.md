@@ -7,19 +7,39 @@ SVM drive data-folder:
 https://drive.google.com/drive/folders/1QLQxg-BjKFzRfSUeOYc8y-AiiP-_GMip?usp=sharing
 
 ### Code
-*[CNN.py](https://github.com/precisit/kex-exoplanet/blob/master/CNN.py)
-Containing code for preprocessing of data, training of the network and validation of the network
-*[CNN_loadmodel.py](https://github.com/precisit/kex-exoplanet/blob/master/CNN_loadmodel.py) 
-Code for using an already trained model, saved on your computer
-*[graphics_preprocessing.py](https://github.com/precisit/kex-exoplanet/blob/master/graphics_preprocessing.py)
-Creates graphics of preprocessing and raw data for the thesis
-*[SVM.py](https://github.com/precisit/kex-exoplanet/blob/master/SVM.py)
-*[SVM_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_gridsearch.ipynb)
-*[SVM_nofeat_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_nofeat_gridsearch.ipynb)
-*[SVM_preprocess.py](https://github.com/precisit/kex-exoplanet/blob/master/SVM_preprocess.py)
+[CNN.py](https://github.com/precisit/kex-exoplanet/blob/master/CNN.py)
+* Containing code for: 
+  - Preprocessing of data
+  - Training of the network
+  - Validation of the network
+  
+[CNN_loadmodel.py](https://github.com/precisit/kex-exoplanet/blob/master/CNN_loadmodel.py) 
+* Code for using an already trained model, saved on your computer
+
+[graphics_preprocessing.py](https://github.com/precisit/kex-exoplanet/blob/master/graphics_preprocessing.py)
+* Creates following graphics: 
+  - Preprocessing steps for CNN
+  - Raw data of light curves for the thesis
+  
+[SVM.py](https://github.com/precisit/kex-exoplanet/blob/master/SVM.py)
+
+[SVM_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_gridsearch.ipynb)
+
+[SVM_nofeat_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_nofeat_gridsearch.ipynb)
+
+[SVM_preprocess.py](https://github.com/precisit/kex-exoplanet/blob/master/SVM_preprocess.py)
 
 ### Required packages
 * Keras
 * Pandas
 * Numpy
 * Matplotlib
+
+### Code authors
+Sofia Dreborg: [@sofiadreborg](https://github.com/sofiadreborg)
+
+Maja Linderholm: [@majalinderholm](https://github.com/majalinderholm)
+
+Jacob Tiensuu: [@JacobTiensuu](https://github.com/JacobTiensuu)
+
+Fredrik Örn: [@fredrikorn](https://github.com/fredrikorn)
