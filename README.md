@@ -35,8 +35,10 @@ This folder contains all the data sets used for training and testing the SVM mod
 
 
 [SVM_nofeat_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_nofeat_gridsearch.ipynb)
+* Containing code as above without the feature input
 
 [SVM_preprocess.py](https://github.com/precisit/kex-exoplanet/blob/master/SVM_preprocess.py)
+* Code for different preprocessing options for the SVM method
 
 ### Required packages
 * Keras
