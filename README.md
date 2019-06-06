@@ -3,8 +3,8 @@ This repository is connected to a bachelor thesis with the purpose of finding ex
 
 ### Data set
 The data set can be found at a host at [kaggle.com](https://www.kaggle.com/keplersmachines/kepler-labelled-time-series-data?fbclid=IwAR04asE3i9QKo9SZru88wCxPsh-EIYYqUUN_8PMu1TdA_k0x5MM1dNg3OPg). It contains time series of light intensity of a star which binary classified in two catagories, "star with no exoplanet in orbit" or "star with an exoplanet in obrit". 
-[SVM drive data-folder]
-(https://drive.google.com/drive/folders/1QLQxg-BjKFzRfSUeOYc8y-AiiP-_GMip?usp=sharing)
+The SVM drive data-folder:
+https://drive.google.com/drive/folders/1QLQxg-BjKFzRfSUeOYc8y-AiiP-_GMip?usp=sharing)
 contains all the data sets used for training and testing the SVM model. 
 
 ### Code
