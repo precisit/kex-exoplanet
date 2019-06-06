@@ -29,7 +29,9 @@ This folder contains all the data sets used for training and testing the SVM mod
   - Validation of the network
 
 [SVM_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_gridsearch.ipynb)
-* Code that varies the different model-parameters as input and evaluate them by using cross-validation
+* Containing code for:
+  - Varying the different model-parameters as input
+  - Evaluating the parameters by using cross-validation
 
 
 [SVM_nofeat_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_nofeat_gridsearch.ipynb)
