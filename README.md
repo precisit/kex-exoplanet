@@ -23,6 +23,10 @@ This folder contains all the data sets used for training and testing the SVM mod
   - Raw data of light curves for the thesis
   
 [SVM.py](https://github.com/precisit/kex-exoplanet/blob/master/SVM.py)
+* Containing code for: 
+  - Preprocessing of data
+  - Training of the network
+  - Validation of the network
 
 [SVM_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_gridsearch.ipynb)
 
