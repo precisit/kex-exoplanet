@@ -30,13 +30,13 @@ This folder contains all the data sets used for training and testing the SVM mod
 
 [SVM_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_gridsearch.ipynb)
 * Containing code for:
-  - Varying the different model-parameters with a feature set as input data
+  - Varying the model-parameters with a feature set as input data
   - Evaluating the parameters by using cross-validation
 
 
 [SVM_nofeat_gridsearch.ipynb](https://github.com/precisit/kex-exoplanet/blob/master/SVM_nofeat_gridsearch.ipynb)
 * Containing code for:
-  - Varying the different model-parameters with the raw data set as input
+  - Varying the model-parameters with the raw data set as input
   - Evaluating the parameters by using cross-validation
 
 [SVM_preprocess.py](https://github.com/precisit/kex-exoplanet/blob/master/SVM_preprocess.py)
